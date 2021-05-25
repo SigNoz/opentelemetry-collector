@@ -9,14 +9,14 @@ import (
 )
 
 const (
-	defaultDatasource        string        = "tcp://18.220.17.59:9000"
+	defaultDatasource        string        = "tcp://127.0.0.1:9000"
 	defaultOperationsTable   string        = "jaeger_operations_v2"
 	defaultIndexTable        string        = "jaeger_index_v2"
 	defaultSpansTable        string        = "jaeger_spans_v2"
 	defaultArchiveSpansTable string        = "jaeger_archive_spans_v2"
 	defaultWriteBatchDelay   time.Duration = 5 * time.Second
 	defaultWriteBatchSize    int           = 10000
-	defaultEncoding          Encoding      = EncodingProto
+	defaultEncoding          Encoding      = EncodingJSON
 )
 
 const (
@@ -68,12 +68,17 @@ type Options struct {
 }
 
 // NewOptions creates a new Options struct.
-func NewOptions(primaryNamespace string, otherNamespaces ...string) *Options {
+func NewOptions(datasource string, primaryNamespace string, otherNamespaces ...string) *Options {
+
+	if datasource == "" {
+		datasource = defaultDatasource
+	}
+
 	options := &Options{
 		primary: &namespaceConfig{
 			namespace:       primaryNamespace,
 			Enabled:         true,
-			Datasource:      defaultDatasource,
+			Datasource:      datasource,
 			OperationsTable: defaultOperationsTable,
 			IndexTable:      defaultIndexTable,
 			SpansTable:      defaultSpansTable,
@@ -89,7 +94,7 @@ func NewOptions(primaryNamespace string, otherNamespaces ...string) *Options {
 		if namespace == archiveNamespace {
 			options.others[namespace] = &namespaceConfig{
 				namespace:       namespace,
-				Datasource:      defaultDatasource,
+				Datasource:      datasource,
 				OperationsTable: "",
 				IndexTable:      "",
 				SpansTable:      defaultArchiveSpansTable,

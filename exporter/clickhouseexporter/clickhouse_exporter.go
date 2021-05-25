@@ -26,7 +26,9 @@ import (
 // Crete new exporter.
 func newExporter(cfg config.Exporter, logger *zap.Logger) (*storage, error) {
 
-	f := ClickHouseNewFactory()
+	configClickHouse := cfg.(*Config)
+
+	f := ClickHouseNewFactory(configClickHouse.Datasource)
 
 	err := f.Initialize(logger)
 	if err != nil {

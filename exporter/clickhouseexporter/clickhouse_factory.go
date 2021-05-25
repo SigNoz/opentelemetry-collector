@@ -14,11 +14,11 @@ import (
 
 // Factory implements storage.Factory for Clickhouse backend.
 type Factory struct {
-	logger  *zap.Logger
-	Options *Options
-	db      *sql.DB
-	archive *sql.DB
-
+	logger     *zap.Logger
+	Options    *Options
+	db         *sql.DB
+	archive    *sql.DB
+	datasource string
 	makeWriter writerMaker
 }
 
@@ -30,10 +30,9 @@ type Writer interface {
 type writerMaker func(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error)
 
 // NewFactory creates a new Factory.
-func ClickHouseNewFactory() *Factory {
+func ClickHouseNewFactory(datasource string) *Factory {
 	return &Factory{
-		Options: NewOptions(primaryNamespace, archiveNamespace),
-
+		Options: NewOptions(datasource, primaryNamespace, archiveNamespace),
 		// makeReader: func(db *sql.DB, operationsTable, indexTable, spansTable string) (spanstore.Reader, error) {
 		// 	return store.NewTraceReader(db, operationsTable, indexTable, spansTable), nil
 		// },

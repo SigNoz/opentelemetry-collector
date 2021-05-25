@@ -22,7 +22,8 @@ import (
 type Config struct {
 	config.ExporterSettings `mapstructure:",squash"` // squash ensures fields are correctly decoded in embedded struct
 
-	Options `mapstructure:",squash"`
+	Options    `mapstructure:",squash"`
+	Datasource string `mapstructure:"datasource"`
 }
 
 var _ config.Exporter = (*Config)(nil)
