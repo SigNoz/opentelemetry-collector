@@ -31,9 +31,9 @@ const (
 )
 
 func createDefaultConfig() config.Exporter {
-	opts := NewOptions(primaryNamespace, archiveNamespace)
+	// opts := NewOptions(primaryNamespace, archiveNamespace)
 	return &Config{
-		Options:          *opts,
+		// Options:          *opts,
 		ExporterSettings: config.NewExporterSettings(config.NewID(typeStr)),
 	}
 }
