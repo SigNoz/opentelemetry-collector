@@ -1,23 +1,14 @@
 package clickhouseexporter
 
 import (
-<<<<<<< HEAD
-=======
-	"database/sql"
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	"flag"
 	"fmt"
 	"time"
 
-<<<<<<< HEAD
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/ClickHouse/clickhouse-go"
 
-=======
-	_ "github.com/ClickHouse/clickhouse-go"
-	"github.com/jaegertracing/jaeger/model"
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
