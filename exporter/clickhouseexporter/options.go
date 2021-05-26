@@ -1,34 +1,20 @@
 package clickhouseexporter
 
 import (
-<<<<<<< HEAD
 	"flag"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 
-=======
-	"database/sql"
-	"flag"
-	"time"
-
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	"github.com/spf13/viper"
 )
 
 const (
 	defaultDatasource        string        = "tcp://127.0.0.1:9000"
-<<<<<<< HEAD
 	defaultOperationsTable   string        = "signoz_operations"
 	defaultIndexTable        string        = "signoz_index"
 	defaultSpansTable        string        = "signoz_spans"
 	defaultArchiveSpansTable string        = "signoz_archive_spans"
-=======
-	defaultOperationsTable   string        = "jaeger_operations_v2"
-	defaultIndexTable        string        = "jaeger_index_v2"
-	defaultSpansTable        string        = "jaeger_spans_v2"
-	defaultArchiveSpansTable string        = "jaeger_archive_spans_v2"
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	defaultWriteBatchDelay   time.Duration = 5 * time.Second
 	defaultWriteBatchSize    int           = 10000
 	defaultEncoding          Encoding      = EncodingJSON

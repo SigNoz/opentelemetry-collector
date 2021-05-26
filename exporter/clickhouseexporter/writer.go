@@ -117,11 +117,7 @@ func (w *SpanWriter) backgroundWriter() {
 				w.logger.Error("Could not write a batch of spans", zap.Error(err))
 			}
 
-<<<<<<< HEAD
 			batch = make([]*Span, 0, w.size)
-=======
-			batch = make([]*model.Span, 0, w.size)
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 			last = time.Now()
 		}
 
@@ -133,11 +129,7 @@ func (w *SpanWriter) backgroundWriter() {
 	}
 }
 
-<<<<<<< HEAD
 func (w *SpanWriter) writeBatch(batch []*Span) error {
-=======
-func (w *SpanWriter) writeBatch(batch []*model.Span) error {
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	if err := w.writeModelBatch(batch); err != nil {
 		return err
 	}
@@ -183,23 +175,13 @@ func (w *SpanWriter) writeModelBatch(batch []*model.Span) error {
 		if w.encoding == EncodingJSON {
 			serialized, err = json.Marshal(span)
 		} else {
-<<<<<<< HEAD
 			// serialized, err = proto.Marshal(span)
 		}
-=======
-			serialized, err = proto.Marshal(span)
-		}
-
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 		if err != nil {
 			return err
 		}
 
-<<<<<<< HEAD
 		_, err = statement.Exec(span.StartTimeUnixNano, span.TraceId, serialized)
-=======
-		_, err = statement.Exec(span.StartTime, span.TraceID.String(), serialized)
->>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 		if err != nil {
 			return err
 		}
