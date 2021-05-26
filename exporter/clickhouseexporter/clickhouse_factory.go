@@ -1,13 +1,14 @@
 package clickhouseexporter
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	_ "github.com/ClickHouse/clickhouse-go"
-	"github.com/jaegertracing/jaeger/model"
+
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -16,18 +17,18 @@ import (
 type Factory struct {
 	logger     *zap.Logger
 	Options    *Options
-	db         *sql.DB
-	archive    *sql.DB
+	db         *sqlx.DB
+	archive    *sqlx.DB
 	datasource string
 	makeWriter writerMaker
 }
 
 // Writer writes spans to storage.
 type Writer interface {
-	WriteSpan(span *model.Span) error
+	WriteSpan(span *Span) error
 }
 
-type writerMaker func(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error)
+type writerMaker func(logger *zap.Logger, db *sqlx.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error)
 
 // NewFactory creates a new Factory.
 func ClickHouseNewFactory(datasource string) *Factory {
@@ -36,7 +37,7 @@ func ClickHouseNewFactory(datasource string) *Factory {
 		// makeReader: func(db *sql.DB, operationsTable, indexTable, spansTable string) (spanstore.Reader, error) {
 		// 	return store.NewTraceReader(db, operationsTable, indexTable, spansTable), nil
 		// },
-		makeWriter: func(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error) {
+		makeWriter: func(logger *zap.Logger, db *sqlx.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error) {
 			return NewSpanWriter(logger, db, indexTable, spansTable, encoding, delay, size), nil
 		},
 	}
@@ -66,7 +67,7 @@ func (f *Factory) Initialize(logger *zap.Logger) error {
 	return nil
 }
 
-func (f *Factory) connect(cfg *namespaceConfig) (*sql.DB, error) {
+func (f *Factory) connect(cfg *namespaceConfig) (*sqlx.DB, error) {
 	if cfg.Encoding != EncodingJSON && cfg.Encoding != EncodingProto {
 		return nil, fmt.Errorf("unknown encoding %q, supported: %q, %q", cfg.Encoding, EncodingJSON, EncodingProto)
 	}

@@ -1,18 +1,14 @@
 package clickhouseexporter
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	"sort"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/gogo/protobuf/proto"
-	"go.uber.org/zap"
+	"github.com/jmoiron/sqlx"
 
-	"github.com/jaegertracing/jaeger/model"
+	"go.uber.org/zap"
 )
 
 type Encoding string
@@ -27,19 +23,19 @@ const (
 // SpanWriter for writing spans to ClickHouse
 type SpanWriter struct {
 	logger     *zap.Logger
-	db         *sql.DB
+	db         *sqlx.DB
 	indexTable string
 	spansTable string
 	encoding   Encoding
 	delay      time.Duration
 	size       int
-	spans      chan *model.Span
+	spans      chan *Span
 	finish     chan bool
 	done       sync.WaitGroup
 }
 
 // NewSpanWriter returns a SpanWriter for the database
-func NewSpanWriter(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) *SpanWriter {
+func NewSpanWriter(logger *zap.Logger, db *sqlx.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) *SpanWriter {
 	writer := &SpanWriter{
 		logger:     logger,
 		db:         db,
@@ -48,7 +44,7 @@ func NewSpanWriter(logger *zap.Logger, db *sql.DB, indexTable string, spansTable
 		encoding:   encoding,
 		delay:      delay,
 		size:       size,
-		spans:      make(chan *model.Span, size),
+		spans:      make(chan *Span, size),
 		finish:     make(chan bool),
 	}
 
@@ -58,7 +54,7 @@ func NewSpanWriter(logger *zap.Logger, db *sql.DB, indexTable string, spansTable
 }
 
 func (w *SpanWriter) backgroundWriter() {
-	batch := make([]*model.Span, 0, w.size)
+	batch := make([]*Span, 0, w.size)
 
 	timer := time.After(w.delay)
 	last := time.Now()
@@ -86,7 +82,7 @@ func (w *SpanWriter) backgroundWriter() {
 				w.logger.Error("Could not write a batch of spans", zap.Error(err))
 			}
 
-			batch = make([]*model.Span, 0, w.size)
+			batch = make([]*Span, 0, w.size)
 			last = time.Now()
 		}
 
@@ -98,7 +94,7 @@ func (w *SpanWriter) backgroundWriter() {
 	}
 }
 
-func (w *SpanWriter) writeBatch(batch []*model.Span) error {
+func (w *SpanWriter) writeBatch(batch []*Span) error {
 	if err := w.writeModelBatch(batch); err != nil {
 		return err
 	}
@@ -112,7 +108,7 @@ func (w *SpanWriter) writeBatch(batch []*model.Span) error {
 	return nil
 }
 
-func (w *SpanWriter) writeModelBatch(batch []*model.Span) error {
+func (w *SpanWriter) writeModelBatch(batch []*Span) error {
 	tx, err := w.db.Begin()
 	if err != nil {
 		return err
@@ -140,14 +136,13 @@ func (w *SpanWriter) writeModelBatch(batch []*model.Span) error {
 		if w.encoding == EncodingJSON {
 			serialized, err = json.Marshal(span)
 		} else {
-			serialized, err = proto.Marshal(span)
+			// serialized, err = proto.Marshal(span)
 		}
-
 		if err != nil {
 			return err
 		}
 
-		_, err = statement.Exec(span.StartTime, span.TraceID.String(), serialized)
+		_, err = statement.Exec(span.StartTimeUnixNano, span.TraceId, serialized)
 		if err != nil {
 			return err
 		}
@@ -158,7 +153,7 @@ func (w *SpanWriter) writeModelBatch(batch []*model.Span) error {
 	return tx.Commit()
 }
 
-func (w *SpanWriter) writeIndexBatch(batch []*model.Span) error {
+func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 	tx, err := w.db.Begin()
 	if err != nil {
 		return err
@@ -173,7 +168,7 @@ func (w *SpanWriter) writeIndexBatch(batch []*model.Span) error {
 		}
 	}()
 
-	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, service, operation, durationUs, tags) VALUES (?, ?, ?, ?, ?, ?)", w.indexTable))
+	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, service, name, durationNano, tags, tagKeys, tagValues) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", w.indexTable))
 	if err != nil {
 		return err
 	}
@@ -182,12 +177,17 @@ func (w *SpanWriter) writeIndexBatch(batch []*model.Span) error {
 
 	for _, span := range batch {
 		_, err = statement.Exec(
-			span.StartTime,
-			span.TraceID.String(),
-			span.Process.ServiceName,
-			span.OperationName,
-			span.Duration.Microseconds(),
-			uniqueTagsForSpan(span),
+			span.StartTimeUnixNano,
+			span.TraceId,
+			span.ServiceName,
+			span.Name,
+			span.DurationNano,
+			span.Tags,
+			span.TagsKeys,
+			span.TagsValues,
+			// clickhouse.Array(span.Tags),
+			// clickhouse.Array(span.TagsKeys),
+			// clickhouse.Array(span.TagsValues),
 		)
 		if err != nil {
 			return err
@@ -200,7 +200,7 @@ func (w *SpanWriter) writeIndexBatch(batch []*model.Span) error {
 }
 
 // WriteSpan writes the encoded span
-func (w *SpanWriter) WriteSpan(span *model.Span) error {
+func (w *SpanWriter) WriteSpan(span *Span) error {
 	w.spans <- span
 	return nil
 }
@@ -210,44 +210,4 @@ func (w *SpanWriter) Close() error {
 	w.finish <- true
 	w.done.Wait()
 	return nil
-}
-
-func uniqueTagsForSpan(span *model.Span) []string {
-	uniqueTags := make(map[string]struct{}, len(span.Tags)+len(span.Process.Tags))
-
-	buf := &strings.Builder{}
-
-	for _, kv := range span.Tags {
-		uniqueTags[tagString(buf, &kv)] = struct{}{}
-	}
-
-	for _, kv := range span.Process.Tags {
-		uniqueTags[tagString(buf, &kv)] = struct{}{}
-	}
-
-	for _, event := range span.Logs {
-		for _, kv := range event.Fields {
-			uniqueTags[tagString(buf, &kv)] = struct{}{}
-		}
-	}
-
-	tags := make([]string, 0, len(uniqueTags))
-
-	for kv := range uniqueTags {
-		tags = append(tags, kv)
-	}
-
-	sort.Strings(tags)
-
-	return tags
-}
-
-func tagString(buf *strings.Builder, kv *model.KeyValue) string {
-	buf.Reset()
-
-	buf.WriteString(kv.Key)
-	buf.WriteByte('=')
-	buf.WriteString(kv.AsString())
-
-	return buf.String()
 }

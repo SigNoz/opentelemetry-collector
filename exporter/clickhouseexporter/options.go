@@ -1,19 +1,20 @@
 package clickhouseexporter
 
 import (
-	"database/sql"
 	"flag"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 
 	"github.com/spf13/viper"
 )
 
 const (
 	defaultDatasource        string        = "tcp://127.0.0.1:9000"
-	defaultOperationsTable   string        = "jaeger_operations_v2"
-	defaultIndexTable        string        = "jaeger_index_v2"
-	defaultSpansTable        string        = "jaeger_spans_v2"
-	defaultArchiveSpansTable string        = "jaeger_archive_spans_v2"
+	defaultOperationsTable   string        = "signoz_operations"
+	defaultIndexTable        string        = "signoz_index"
+	defaultSpansTable        string        = "signoz_spans"
+	defaultArchiveSpansTable string        = "signoz_archive_spans"
 	defaultWriteBatchDelay   time.Duration = 5 * time.Second
 	defaultWriteBatchSize    int           = 10000
 	defaultEncoding          Encoding      = EncodingJSON
@@ -45,10 +46,10 @@ type namespaceConfig struct {
 }
 
 // Connecto defines how to connect to the database
-type Connector func(cfg *namespaceConfig) (*sql.DB, error)
+type Connector func(cfg *namespaceConfig) (*sqlx.DB, error)
 
-func defaultConnector(cfg *namespaceConfig) (*sql.DB, error) {
-	db, err := sql.Open("clickhouse", cfg.Datasource)
+func defaultConnector(cfg *namespaceConfig) (*sqlx.DB, error) {
+	db, err := sqlx.Open("clickhouse", cfg.Datasource)
 	if err != nil {
 		return nil, err
 	}
