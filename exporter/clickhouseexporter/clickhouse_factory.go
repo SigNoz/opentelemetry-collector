@@ -1,14 +1,23 @@
 package clickhouseexporter
 
 import (
+<<<<<<< HEAD
+=======
+	"database/sql"
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	"flag"
 	"fmt"
 	"time"
 
+<<<<<<< HEAD
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/ClickHouse/clickhouse-go"
 
+=======
+	_ "github.com/ClickHouse/clickhouse-go"
+	"github.com/jaegertracing/jaeger/model"
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -17,18 +26,30 @@ import (
 type Factory struct {
 	logger     *zap.Logger
 	Options    *Options
+<<<<<<< HEAD
 	db         *sqlx.DB
 	archive    *sqlx.DB
+=======
+	db         *sql.DB
+	archive    *sql.DB
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	datasource string
 	makeWriter writerMaker
 }
 
 // Writer writes spans to storage.
 type Writer interface {
+<<<<<<< HEAD
 	WriteSpan(span *Span) error
 }
 
 type writerMaker func(logger *zap.Logger, db *sqlx.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error)
+=======
+	WriteSpan(span *model.Span) error
+}
+
+type writerMaker func(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error)
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 
 // NewFactory creates a new Factory.
 func ClickHouseNewFactory(datasource string) *Factory {
@@ -37,7 +58,11 @@ func ClickHouseNewFactory(datasource string) *Factory {
 		// makeReader: func(db *sql.DB, operationsTable, indexTable, spansTable string) (spanstore.Reader, error) {
 		// 	return store.NewTraceReader(db, operationsTable, indexTable, spansTable), nil
 		// },
+<<<<<<< HEAD
 		makeWriter: func(logger *zap.Logger, db *sqlx.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error) {
+=======
+		makeWriter: func(logger *zap.Logger, db *sql.DB, indexTable string, spansTable string, encoding Encoding, delay time.Duration, size int) (Writer, error) {
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 			return NewSpanWriter(logger, db, indexTable, spansTable, encoding, delay, size), nil
 		},
 	}
@@ -67,7 +92,11 @@ func (f *Factory) Initialize(logger *zap.Logger) error {
 	return nil
 }
 
+<<<<<<< HEAD
 func (f *Factory) connect(cfg *namespaceConfig) (*sqlx.DB, error) {
+=======
+func (f *Factory) connect(cfg *namespaceConfig) (*sql.DB, error) {
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	if cfg.Encoding != EncodingJSON && cfg.Encoding != EncodingProto {
 		return nil, fmt.Errorf("unknown encoding %q, supported: %q, %q", cfg.Encoding, EncodingJSON, EncodingProto)
 	}

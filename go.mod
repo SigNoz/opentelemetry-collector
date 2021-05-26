@@ -24,7 +24,10 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/jaegertracing/jaeger v1.22.0
+<<<<<<< HEAD
 	github.com/jmoiron/sqlx v1.2.0
+=======
+>>>>>>> 9f5c01d9fcd5836b0745240db33f8a8d0ee16087
 	github.com/leoluk/perflib_exporter v0.1.0
 	github.com/openzipkin/zipkin-go v0.2.5
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
