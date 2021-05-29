@@ -168,7 +168,7 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 		}
 	}()
 
-	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, service, name, durationNano, tags, tagKeys, tagValues) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", w.indexTable))
+	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, spanID, serviceName, name, kind, durationNano, tags, tagsKeys, tagsValues, statusCode, externalHttpMethod, externalHttpUrl, component, dBSystem, dBName, dBOperation, peerService) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", w.indexTable))
 	if err != nil {
 		return err
 	}
@@ -179,15 +179,22 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 		_, err = statement.Exec(
 			span.StartTimeUnixNano,
 			span.TraceId,
+			span.SpanId,
 			span.ServiceName,
 			span.Name,
+			span.Kind,
 			span.DurationNano,
 			span.Tags,
 			span.TagsKeys,
 			span.TagsValues,
-			// clickhouse.Array(span.Tags),
-			// clickhouse.Array(span.TagsKeys),
-			// clickhouse.Array(span.TagsValues),
+			span.StatusCode,
+			span.ExternalHttpMethod,
+			span.ExternalHttpUrl,
+			span.Component,
+			span.DBSystem,
+			span.DBName,
+			span.DBOperation,
+			span.PeerService,
 		)
 		if err != nil {
 			return err

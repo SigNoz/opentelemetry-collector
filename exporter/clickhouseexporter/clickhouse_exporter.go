@@ -111,6 +111,41 @@ func ServiceNameForResource(resource pdata.Resource) string {
 	return service.StringVal()
 }
 
+func populateOtherDimensions(attributes pdata.AttributeMap, span *Span) {
+
+	attributes.Range(func(k string, v pdata.AttributeValue) bool {
+		if k == "http.status_code" {
+			span.StatusCode = v.IntVal()
+		}
+		if k == "http.url" {
+			span.ExternalHttpUrl = v.StringVal()
+		}
+		if k == "http.method" {
+			span.ExternalHttpMethod = v.StringVal()
+		}
+		if k == "component" {
+			span.Component = v.StringVal()
+		}
+
+		if k == "db.system" {
+			span.DBSystem = v.StringVal()
+		}
+		if k == "db.name" {
+			span.DBName = v.StringVal()
+		}
+		if k == "db.operation" {
+			span.DBOperation = v.StringVal()
+		}
+		if k == "peer.service" {
+			span.PeerService = v.StringVal()
+		}
+
+		return true
+
+	})
+
+}
+
 func newStructuredSpan(otelSpan pdata.Span, ServiceName string) *Span {
 
 	durationNano := uint64(otelSpan.EndTimestamp() - otelSpan.StartTimestamp())
@@ -155,7 +190,7 @@ func newStructuredSpan(otelSpan pdata.Span, ServiceName string) *Span {
 		TagsValues:        tagsValues,
 	}
 
-	// populateOtherDimensions(attributes, span)
+	populateOtherDimensions(attributes, span)
 
 	return span
 }
