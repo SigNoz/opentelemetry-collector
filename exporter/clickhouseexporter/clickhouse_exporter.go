@@ -132,6 +132,7 @@ func populateOtherDimensions(attributes pdata.AttributeMap, span *Span) {
 		}
 		if k == "db.name" {
 			span.DBName = v.StringVal()
+
 		}
 		if k == "db.operation" {
 			span.DBOperation = v.StringVal()

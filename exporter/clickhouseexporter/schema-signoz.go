@@ -1,5 +1,7 @@
 package clickhouseexporter
 
+import "encoding/json"
+
 type Span struct {
 	TraceId            string        `json:"traceId,omitempty"`
 	SpanId             string        `json:"spanId,omitempty"`
@@ -17,9 +19,9 @@ type Span struct {
 	ExternalHttpMethod string        `json:"externalHttpMethod,omitempty"`
 	ExternalHttpUrl    string        `json:"externalHttpUrl,omitempty"`
 	Component          string        `json:"component,omitempty"`
-	DBSystem           string        `json:"dBSystem,omitempty"`
-	DBName             string        `json:"dBName,omitempty"`
-	DBOperation        string        `json:"dBOperation,omitempty"`
+	DBSystem           string        `json:"dbSystem,omitempty"`
+	DBName             string        `json:"dbName,omitempty"`
+	DBOperation        string        `json:"dbOperation,omitempty"`
 	PeerService        string        `json:"peerService,omitempty"`
 }
 
@@ -27,4 +29,14 @@ type OtelSpanRef struct {
 	TraceId string `json:"traceId,omitempty"`
 	SpanId  string `json:"spanId,omitempty"`
 	RefType string `json:"refType,omitempty"`
+}
+
+func (span *Span) GetReferences() *string {
+	value, err := json.Marshal(span.References)
+	if err != nil {
+		return nil
+	}
+
+	referencesString := string(value)
+	return &referencesString
 }

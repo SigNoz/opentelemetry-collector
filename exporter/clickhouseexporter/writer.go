@@ -1,6 +1,7 @@
 package clickhouseexporter
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -168,7 +169,7 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 		}
 	}()
 
-	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, spanID, serviceName, name, kind, durationNano, tags, tagsKeys, tagsValues, statusCode, externalHttpMethod, externalHttpUrl, component, dBSystem, dBName, dBOperation, peerService) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", w.indexTable))
+	statement, err := tx.Prepare(fmt.Sprintf("INSERT INTO %s (timestamp, traceID, spanID, parentSpanID, serviceName, name, kind, durationNano, tags, tagsKeys, tagsValues, statusCode, references, externalHttpMethod, externalHttpUrl, component, dbSystem, dbName, dbOperation, peerService) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", w.indexTable))
 	if err != nil {
 		return err
 	}
@@ -180,6 +181,7 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 			span.StartTimeUnixNano,
 			span.TraceId,
 			span.SpanId,
+			span.ParentSpanId,
 			span.ServiceName,
 			span.Name,
 			span.Kind,
@@ -188,13 +190,14 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 			span.TagsKeys,
 			span.TagsValues,
 			span.StatusCode,
-			span.ExternalHttpMethod,
-			span.ExternalHttpUrl,
-			span.Component,
-			span.DBSystem,
-			span.DBName,
-			span.DBOperation,
-			span.PeerService,
+			span.GetReferences(),
+			NewNullString(span.ExternalHttpMethod),
+			NewNullString(span.ExternalHttpUrl),
+			NewNullString(span.Component),
+			NewNullString(span.DBSystem),
+			NewNullString(span.DBName),
+			NewNullString(span.DBOperation),
+			NewNullString(span.PeerService),
 		)
 		if err != nil {
 			return err
@@ -204,6 +207,16 @@ func (w *SpanWriter) writeIndexBatch(batch []*Span) error {
 	commited = true
 
 	return tx.Commit()
+}
+
+func NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }
 
 // WriteSpan writes the encoded span

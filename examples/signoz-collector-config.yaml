@@ -1,8 +1,8 @@
 receivers:
-  # otlp:
-  #   protocols:
-  #     grpc:
-  #     http:
+  otlp:
+    protocols:
+      grpc:
+      http:
   jaeger:
     protocols:
       grpc:
@@ -48,7 +48,7 @@ service:
   extensions: [health_check, zpages]
   pipelines:
     traces:
-      receivers: [jaeger]
+      receivers: [jaeger, otlp]
       processors: [batch]
       exporters: [clickhouse]
     # metrics:

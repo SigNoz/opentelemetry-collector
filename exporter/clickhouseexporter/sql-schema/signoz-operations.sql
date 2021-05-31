@@ -6,7 +6,6 @@ POPULATE
 AS SELECT
   toDate(timestamp) AS date,
   serviceName,
-  name,
-  count() as count
+  name
 FROM signoz_index
 GROUP BY date, serviceName, name
