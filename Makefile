@@ -169,7 +169,7 @@ run:
 docker-component: check-component
 	GOOS=linux $(MAKE) $(COMPONENT)
 	cp ./bin/$(COMPONENT)_linux_amd64 ./cmd/$(COMPONENT)/$(COMPONENT)
-	docker build -t $(COMPONENT) ./cmd/$(COMPONENT)/
+	docker build -t signoz/$(COMPONENT) ./cmd/$(COMPONENT)/
 	rm ./cmd/$(COMPONENT)/$(COMPONENT)
 
 .PHONY: for-all

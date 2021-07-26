@@ -14,7 +14,7 @@ USER ${USER_UID}
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=otelcol /otelcol /
-COPY config.yaml /etc/otel/config.yaml
+COPY signoz-collector-config.yaml /etc/otel/signoz-collector-config.yaml
 ENTRYPOINT ["/otelcol"]
-CMD ["--config", "/etc/otel/config.yaml"]
-EXPOSE 4317 55678 55679
+CMD ["--config", "/etc/otel/signoz-collector-config.yaml"]
+EXPOSE 4317 55678 55679 14268
