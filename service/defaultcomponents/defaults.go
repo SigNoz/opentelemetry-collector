@@ -19,6 +19,7 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer/consumererror"
 	"go.opentelemetry.io/collector/exporter/clickhouseexporter"
+	"go.opentelemetry.io/collector/exporter/clickhousemetricsexporter"
 	"go.opentelemetry.io/collector/exporter/fileexporter"
 	"go.opentelemetry.io/collector/exporter/jaegerexporter"
 	"go.opentelemetry.io/collector/exporter/kafkaexporter"
@@ -92,6 +93,7 @@ func Components() (
 		otlphttpexporter.NewFactory(),
 		kafkaexporter.NewFactory(),
 		clickhouseexporter.NewFactory(),
+		clickhousemetricsexporter.NewFactory(),
 	)
 	if err != nil {
 		errs = append(errs, err)

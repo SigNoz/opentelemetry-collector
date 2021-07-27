@@ -7,6 +7,13 @@ receivers:
     protocols:
       grpc:
       thrift_http:
+
+  hostmetrics:
+    collection_interval: 10s
+    scrapers:
+      load:
+      memory:
+
 processors:
   batch:
     send_batch_size: 1000
@@ -41,17 +48,25 @@ exporters:
   #     - 3.143.220.32:9092
   #   topic: 'otlp_metrics'
   #   protocol_version: 2.0.0
-  clickhouse:
-    datasource: tcp://18.220.17.59:9000
+  # clickhouse:
+  #   datasource: tcp://localhost:9000
+  prometheus:
+    endpoint: "127.0.0.1:8889"
+    resource_to_telemetry_conversion:
+      enabled: true
+  clickhousemetricswrite:
+    # endpoint: "http://some.url:9411/api/prom/push"
+    resource_to_telemetry_conversion:
+      enabled: true
 
 service:
   extensions: [health_check, zpages]
   pipelines:
-    traces:
-      receivers: [jaeger, otlp]
-      processors: [batch]
-      exporters: [clickhouse]
-    # metrics:
-    #   receivers: [otlp]
+    # traces:
+    #   receivers: [jaeger, otlp]
     #   processors: [batch]
-    #   exporters: [kafka/metrics]
+    #   exporters: [clickhouse]
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [batch]
+      exporters: [prometheus, clickhousemetricswrite]
