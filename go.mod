@@ -12,7 +12,7 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.3.0
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/fatih/structtag v1.2.0
-	github.com/go-kit/kit v0.10.0
+	github.com/go-kit/kit v0.11.0
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
@@ -26,9 +26,9 @@ require (
 	github.com/leoluk/perflib_exporter v0.1.0
 	github.com/openzipkin/zipkin-go v0.2.5
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/prometheus/client_golang v1.10.0
+	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/common v0.24.0
+	github.com/prometheus/common v0.26.0
 	github.com/prometheus/prometheus v1.8.2-0.20210430082741-2a4b8e12bbf2
 	github.com/rs/cors v1.7.0
 	github.com/shirou/gopsutil v3.21.4+incompatible
@@ -42,12 +42,12 @@ require (
 	github.com/xdg-go/scram v0.0.0-20180814205039-7eeb5667e42c
 	go.opencensus.io v0.23.0
 	go.uber.org/atomic v1.7.0
-	go.uber.org/zap v1.16.0
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+	go.uber.org/zap v1.17.0
+	golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
 	golang.org/x/text v0.3.6
-	google.golang.org/genproto v0.0.0-20210312152112-fc591d9ea70f
-	google.golang.org/grpc v1.37.1
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
+	google.golang.org/grpc v1.38.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
