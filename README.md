@@ -1,3 +1,7 @@
+cd cmd/otelcol
+OS111MODULE=on CGO_ENABLED=0 COMPONENT=otelcol GOOS=linux GOARCH=amd64 go build -v
+docker build -t signoz/otelcol:0.4.0
+
 ---
 
 <p align="center">
