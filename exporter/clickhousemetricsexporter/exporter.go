@@ -71,7 +71,7 @@ func NewPrwExporter(namespace string, endpoint string, client *http.Client, exte
 	userAgentHeader := fmt.Sprintf("%s/%s", strings.ReplaceAll(strings.ToLower(buildInfo.Description), " ", "-"), buildInfo.Version)
 
 	params := &ClickHouseParams{
-		DSN:                  "tcp://127.0.0.1:9000/?database=prometheus2",
+		DSN:                  endpoint,
 		DropDatabase:         false,
 		MaxOpenConns:         75,
 		MaxTimeSeriesInQuery: 50,
